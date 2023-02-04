@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option go_package = "/proto";
+
+package proto;
+
+// URLShortener Interface
+service UrlShortener {
+
+  // ShortLink handles the request to shorten url receive as parameters
+  rpc ShortLink(Request) returns (Response) {}
+  // FetchUrl handles the request to fetch url when it receives a shortid as parameter
+  rpc FetchUrl(Request) returns (Response) {}
+}
+
+// Request is the request type
+message Request {
+  string input = 1;
+}
+
+// Message is the message type that containers our url
+message Message {
+  string id = 1;
+  string url = 2;
+}
+
+// Response is the response type that will always be returned from our service
+message Response {
+  int32 code = 1;
+  Message message = 2;
+  string error = 3;
+}
+
+
+
