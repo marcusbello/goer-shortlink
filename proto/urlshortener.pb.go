@@ -74,6 +74,7 @@ type Message struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	//  google.protobuf.Timestamp timestamp = 3;
 	Id  string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Url string `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
 }

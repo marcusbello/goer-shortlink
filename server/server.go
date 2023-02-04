@@ -58,11 +58,10 @@ func (s *urlShortenerServer) FetchUrl(ctx context.Context, in *proto.Request) (*
 	return &resp, nil
 }
 
-/*
-//func newServer() *urlShortenerServer {
-//	return &urlShortenerServer{}
-//}
-*/
+func newServer() *urlShortenerServer {
+
+	return &urlShortenerServer{}
+}
 
 func main() {
 	flag.Parse()

@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+//import "google/protobuf/timestamp.proto";
+
 option go_package = "/proto";
 
 package proto;
@@ -20,6 +22,7 @@ message Request {
 
 // Message is the message type that containers our url
 message Message {
+//  google.protobuf.Timestamp timestamp = 3;
   string id = 1;
   string url = 2;
 }
