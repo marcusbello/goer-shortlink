@@ -44,7 +44,7 @@ func (s *urlShortenerServer) ShortLink(ctx context.Context, in *proto.Request) (
 	if in.Input == "" {
 		resp.Code = 400
 		resp.Error = "empty or invalid url"
-		s.logger.Info("empty or invalid url")
+		s.logger.Errorf("empty or invalid url: %v", in.Input)
 		return &resp, nil
 	}
 
@@ -101,7 +101,7 @@ func main() {
 	// start zap logger
 	logger, _ := zap.NewProduction()
 	sugarLog := logger.Sugar() // sugaredLogger from zap.SugaredLogger
-	defer logger.Sync()        // flushes buffer, if any
+	defer logger.Sync()        //nolint:errcheck    // flushes buffer, if any
 	// pgx dbpool
 	dbURL := "postgres://postgres:postgres@localhost:5432/postgres"
 	dbpool, err := pgxpool.New(context.Background(), dbURL)
@@ -136,5 +136,5 @@ func main() {
 	grpcServer := grpc.NewServer(opts...)
 	proto.RegisterUrlShortenerServer(grpcServer, &urlShortenerServer{logger: sugarLog, db: dbpool, shortCode: shortCode})
 	sugarLog.Info("Starting server on port: ", *port)
-	grpcServer.Serve(lis)
+	_ = grpcServer.Serve(lis)
 }
