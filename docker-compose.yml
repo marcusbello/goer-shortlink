@@ -9,6 +9,6 @@ services:
     ports:
       - "5432:5432"
     #   Set a volume for data and initial sql script
-    #   Maybe configure initial db for future demo
+    #   Maybe configure init db
     volumes:
       - ".pgdata/goer-shortlinks:/var/lib/postgresql/data"
