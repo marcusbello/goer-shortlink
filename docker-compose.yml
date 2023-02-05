@@ -11,4 +11,4 @@ services:
     #   Set a volume for data and initial sql script
     #   May configure initial db for future demo
     volumes:
-      - ".pgdata_urls:/var/lib/postgresql/data"
+      - ".pgdata/goer-shortlinks:/var/lib/postgresql/data"
