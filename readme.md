@@ -1,7 +1,7 @@
-##Goer-Shortlink 
-a grpc url shortener server
+## Goer-Shortlink
+### a grpc url shortener service
 -
-- ###Features
+- ### Features
 1. accepts long url and returns a short link.
 2. fetch url from database by looking at the shortid.
 
