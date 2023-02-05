@@ -1,13 +1,13 @@
--- name: FetchURLByID :one
+-- -- name: FetchURLByID :one
 SELECT * FROM links
 WHERE id = $1 LIMIT 1;
-
--- name: FetchURLByCode :one
+--
+-- -- name: FetchURLByCode :one
 SELECT * FROM links
-WHERE code = $1 LIMIT 1;
+WHERE short = $1 LIMIT 1;
 
 -- name: CreateShortLink :one
 INSERT INTO links (
- code, url )
+ short, url )
  VALUES ( $1, $2 )
 

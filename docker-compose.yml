@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   postgres-test:
-    image: "postgres"
+    image: "postgres:15"
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres

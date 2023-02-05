@@ -68,14 +68,15 @@ func (x *Request) GetInput() string {
 	return ""
 }
 
-// Message is the message type that containers our url
+// Message is the message type that holds both short code and the long url
 type Message struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//  google.protobuf.Timestamp timestamp = 3;
-	Id  string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// id represents short url code
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// url represent long url to be shorten
 	Url string `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
 }
 

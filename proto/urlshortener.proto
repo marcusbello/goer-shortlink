@@ -20,10 +20,11 @@ message Request {
   string input = 1;
 }
 
-// Message is the message type that containers our url
+// Message is the message type that holds both short code and the long url
 message Message {
-//  google.protobuf.Timestamp timestamp = 3;
+  // id represents short url code
   string id = 1;
+  // url represent long url to be shorten
   string url = 2;
 }
 
