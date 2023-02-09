@@ -12,6 +12,7 @@ import (
 	"goer-shortlink/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"log"
 	"net"
 	"os"
 	"time"
@@ -29,10 +30,9 @@ var (
 type urlShortenerServer struct {
 	proto.UnimplementedUrlShortenerServer
 
-	logger    *zap.Logger
+	logger    *zap.SugaredLogger
 	shortCode *shortid.Shortid
 	db        *pgxpool.Pool
-	//TODO: implement logger and tracing
 }
 
 // ShortLink controls our proto.ShortLink service it accepts input url and returns the short url
@@ -43,16 +43,16 @@ func (s *urlShortenerServer) ShortLink(ctx context.Context, in *proto.Request) (
 	if err != nil {
 		resp.Code = 500
 		resp.Error = "internal server error"
-		s.logger.Sugar().Errorf("error generating shortid: %v", err)
+		s.logger.Errorf("error generating shortid: %v", err)
 		return &resp, nil
 	}
-	s.logger.Sugar().Infof("generated -> %v -> %v", shortCode, in.Input)
+	s.logger.Infof("generated -> %v -> %v", shortCode, in.Input)
 
 	// TODO: validate input here
 	if in.Input == "" {
 		resp.Code = 400
 		resp.Error = "empty or invalid url"
-		s.logger.Sugar().Errorf("empty or invalid url: %v", in.Input)
+		s.logger.Errorf("empty or invalid url: %v", in.Input)
 		return &resp, nil
 	}
 
@@ -63,7 +63,7 @@ func (s *urlShortenerServer) ShortLink(ctx context.Context, in *proto.Request) (
 		// TODO: handle postgres error with error types
 		resp.Code = 500
 		resp.Error = "internal server error"
-		s.logger.Sugar().Errorf("unable to insert url: %v and shortcode: %v -> error: %v", in.Input, shortCode, err)
+		s.logger.Errorf("unable to insert url: %v and shortcode: %v -> error: %v", in.Input, shortCode, err)
 		return &resp, nil
 	}
 
@@ -72,7 +72,7 @@ func (s *urlShortenerServer) ShortLink(ctx context.Context, in *proto.Request) (
 	message.Id = shortCode
 	resp.Code = 200
 	resp.Message = &message
-	s.logger.Sugar().Infof("success: %v", &resp)
+	s.logger.Infof("success: %v", &resp)
 	return &resp, nil
 }
 
@@ -87,38 +87,38 @@ func (s *urlShortenerServer) FetchUrl(ctx context.Context, in *proto.Request) (*
 	if err == pgx.ErrNoRows {
 		resp.Code = 404
 		resp.Error = "not found"
-		s.logger.Sugar().Errorf("shortcode not found: %v -> error: %v", in.Input, err)
+		s.logger.Errorf("shortcode not found: %v -> error: %v", in.Input, err)
 		return &resp, nil
 	}
 
 	if err != nil {
 		resp.Code = 500
 		resp.Error = "internal server error"
-		s.logger.Sugar().Errorf("db error -> code: %v -> error: %v", in.Input, err)
+		s.logger.Errorf("db error -> code: %v -> error: %v", in.Input, err)
 		return &resp, nil
 	}
 
 	message.Id = in.Input
 	resp.Code = 200
 	resp.Message = &message
-	s.logger.Sugar().Infof("success: %v", &resp)
+	s.logger.Infof("success: %v", &resp)
 	return &resp, nil
 }
 
 // newServer is our server object constructor
-func newServer(dbURL string, logger *zap.Logger) *urlShortenerServer {
+func newServer(dbURL string, logger *zap.SugaredLogger) *urlShortenerServer {
 	//db
 	if dbURL == "" || len(dbURL) == 0 {
 		dbURL = "postgres://postgres:postgres@localhost:5432/postgres" // default db url
 	}
 	dbpool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
-		logger.Sugar().Fatalf("Unable to create postgres connection pool: %v\n", err)
+		logger.Fatalf("Unable to create postgres connection pool: %v\n", err)
 	}
 	// shortId
 	shortCode, err := shortid.New(1, shortid.DefaultABC, 7665)
 	if err != nil {
-		logger.Sugar().Fatalf("failed to start shortid generator: %v", err)
+		logger.Fatalf("failed to start shortid generator: %v", err)
 	}
 
 	return &urlShortenerServer{
@@ -133,12 +133,13 @@ func main() {
 	flag.Parse()
 	dbURL := os.Getenv("DB_GOER_SHORTLINK_URL")
 	//zap logger
-	logger, _ := zap.NewProduction()
+	zapLogger, _ := zap.NewProduction()
+	logger := zapLogger.Sugar()
 	defer logger.Sync() //nolint:errcheck    // flushes buffer, if any
 	// start net listener
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 	if err != nil {
-		logger.Sugar().Fatalf("failed to listen: %v", err)
+		log.Fatalf("failed to listen: %v", err)
 	}
 	var opts []grpc.ServerOption
 	if *tls {
@@ -150,12 +151,12 @@ func main() {
 		}
 		creds, err := credentials.NewServerTLSFromFile(*certFile, *keyFile)
 		if err != nil {
-			logger.Sugar().Fatalf("Failed to generate credentials: %v", err)
+			log.Fatalf("Failed to generate credentials: %v", err)
 		}
 		opts = []grpc.ServerOption{grpc.Creds(creds)}
 	}
 	grpcServer := grpc.NewServer(opts...)
 	proto.RegisterUrlShortenerServer(grpcServer, newServer(dbURL, logger))
-	logger.Sugar().Info("Starting server on port: ", *port)
+	log.Println("Starting server on port: ", *port)
 	_ = grpcServer.Serve(lis)
 }
