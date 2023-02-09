@@ -106,7 +106,7 @@ func (s *urlShortenerServer) FetchUrl(ctx context.Context, in *proto.Request) (*
 }
 
 // newServer is our server object constructor
-func newServer(dbURL string, logger *zap.SugaredLogger) *urlShortenerServer {
+func initServer(dbURL string, logger *zap.SugaredLogger) *urlShortenerServer {
 	//db
 	if dbURL == "" || len(dbURL) == 0 {
 		dbURL = "postgres://postgres:postgres@localhost:5432/postgres" // default db url
@@ -156,7 +156,7 @@ func main() {
 		opts = []grpc.ServerOption{grpc.Creds(creds)}
 	}
 	grpcServer := grpc.NewServer(opts...)
-	proto.RegisterUrlShortenerServer(grpcServer, newServer(dbURL, logger))
-	log.Println("Starting server on port: ", *port)
+	proto.RegisterUrlShortenerServer(grpcServer, initServer(dbURL, logger))
+	logger.Infoln("Starting server on port: ", *port)
 	_ = grpcServer.Serve(lis)
 }
